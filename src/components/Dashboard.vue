@@ -66,9 +66,10 @@
         :key="item.id"
         :class="{ completed: item.completed }"
       >
-        <div v-if="item.completed">
+        <div v-if="item.completed && !item.delete">
           <h1>{{ item.title }}</h1>
           <h2>{{ item.description }}</h2>
+          <button @click="deleteItem(item.id)">Usun task</button>
           <p class="client">{{ item.client }}</p>
         </div>
       </div>
@@ -90,6 +91,7 @@ export default {
           edit: false,
           editTitle: "",
           editDescription: "",
+          delete: false,
         },
         {
           title: "Strona WychowujMy!",
@@ -101,6 +103,7 @@ export default {
           edit: false,
           editTitle: "",
           editDescription: "",
+          delete: false,
         },
       ],
       newItemName: "",
@@ -108,6 +111,26 @@ export default {
       newItemClient: "",
     };
   },
+  watch: {
+    items: {
+      handler(newItems) {
+        localStorage.setItem("items", JSON.stringify(newItems));
+      },
+      deep: true,
+    },
+  },
+
+  mounted() {
+    const savedItems = localStorage.getItem("items");
+    if (savedItems) {
+      try {
+        this.items = JSON.parse(savedItems);
+      } catch (e) {
+        console.error("Błąd podczas parsowania items z localStorage:", e);
+      }
+    }
+  },
+
   methods: {
     logout() {
       localStorage.removeItem("loggedInUser");
@@ -128,6 +151,7 @@ export default {
         edit: false,
         editTitle: "",
         editDescription: "",
+        delete: false,
       });
       this.newItemName = "";
       this.newItemDesc = "";
@@ -156,6 +180,9 @@ export default {
     editCancel(id) {
       const item = this.items.find((el) => el.id === id);
       item.edit = false;
+    },
+    deleteItem(id) {
+      this.items = this.items.filter((item) => item.id !== id);
     },
   },
 };
